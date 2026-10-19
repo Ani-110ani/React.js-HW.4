@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import styles from "./page.module.css";
 
 const nameSchema = (label) =>
   yup
@@ -98,31 +99,69 @@ export default function RegistrationForm() {
     }
   };
 
+  const isError = serverMessage.startsWith("Error:");
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-      style={{ maxWidth: 400, margin: "40px auto", display: "grid", gap: 16 }}
-    >
-      <h1>Registration</h1>
+    <main className={styles.page}>
+      <div className={styles.glow} aria-hidden="true" />
+      <form
+        className={styles.card}
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+      >
+        <header className={styles.header}>
+          <span className={styles.eyebrow}>GET STARTED</span>
+          <h1>Create your account</h1>
+          <p>Join us by filling in your details below.</p>
+        </header>
 
-      {fields.map(({ name, label, type }) => (
-        <div key={name} style={{ display: "grid", gap: 4 }}>
-          <label htmlFor={name}>{label}</label>
-          <input id={name} type={type} {...register(name)} />
-          {errors[name] && (
-            <span style={{ color: "crimson", fontSize: 13 }}>
-              {errors[name].message}
-            </span>
-          )}
+        <div className={styles.fields}>
+          {fields.map(({ name, label, type }) => (
+            <div
+              className={`${styles.field} ${
+                name === "email" || name === "password"
+                  ? styles.fieldWide
+                  : ""
+              }`}
+              key={name}
+            >
+              <label htmlFor={name}>{label}</label>
+              <input
+                id={name}
+                type={type}
+                aria-invalid={Boolean(errors[name])}
+                aria-describedby={errors[name] ? `${name}-error` : undefined}
+                {...register(name)}
+              />
+              {errors[name] && (
+                <span className={styles.error} id={`${name}-error`}>
+                  {errors[name].message}
+                </span>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
 
-      <button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Submitting..." : "Register"}
-      </button>
+        <button
+          className={styles.submit}
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Creating account..." : "Create account"}
+          {!isSubmitting && <span aria-hidden="true">→</span>}
+        </button>
 
-      {serverMessage && <p>{serverMessage}</p>}
-    </form>
+        {serverMessage && (
+          <p
+            className={`${styles.message} ${
+              isError ? styles.messageError : styles.messageSuccess
+            }`}
+            role="status"
+          >
+            {serverMessage}
+          </p>
+        )}
+      </form>
+    </main>
   );
 }
